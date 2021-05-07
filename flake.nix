@@ -53,7 +53,7 @@
             universe-some
             obelisk-snap-extras
             obelisk-asset-serve-snap
-
+            clay
             ghcide
             ghcid
           ];
@@ -64,8 +64,8 @@
           version = "0.2";
           buildInputs = [ ghc pkgs.ghcid ];
           src = self;
-          buildPhase = "ghc -o $name Main.hs";
-          installPhase = "mkdir -p $out/bin; install -t $out/bin $name";
+          buildPhase = "ghc -o $pname Main.hs";
+          installPhase = "mkdir -p $out/bin; install -t $out/bin $pname";
     };
   };
 }

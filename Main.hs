@@ -18,7 +18,7 @@ module Main where
 import qualified Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Reflex.Dom.Core (el, text)
+import Reflex.Dom.Core (el, text, elAttr, (=:))
 import Data.Functor.Identity (Identity)
 
 import Obelisk.Route ( pattern (:/) )
@@ -29,6 +29,8 @@ import qualified Obelisk.Route.TH as O
 import qualified Obelisk.Run as O
 
 import qualified Obelisk.Route as O
+
+import Clay
 
 data BackendRoute :: * -> * where
   BackendRoute_Missing :: BackendRoute ()
@@ -50,16 +52,33 @@ concat <$> mapM O.deriveRouteComponent
   , ''FrontendRoute
   ]
 
-commonStuff :: String
-commonStuff = "hDAO - hic et nunc DAO"
+commonTitle :: String
+commonTitle = "hDAO - hic et nunc DAO"
+
+myStylesheet :: Css
+myStylesheet = body ? 
+                  do background  black
+                     color       green
+                     fontFamily  monospace
+                     border      dashed (px 2) yellow
 
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
   { O._frontend_head = do
-      el "title" $ text $ T.pack commonStuff
+      el "title" $ text $ T.pack commonTitle
+      el "style" $ text $ render $ myStylesheet 
   , O._frontend_body = do
-      el "h1" $ text $ T.pack commonStuff
-      el "p" $ text $ T.pack commonStuff
+      el "h1" $ text $ T.pack commonTitle
+
+      el "h2" $ text $ "What is hDAO?"
+      el "p" $ text "hDAO is the governance token for the decentralized digital assets marketplace hic et nunc"
+      el "h2" $ text $ "Useful links"
+      
+      elAttr "a"
+        ("href" =: "https://github.com/hicetnunc2000/hicetnunc/wiki/hDAO" )  (text "hDAO Wiki Page")
+      elAttr "a"
+        ("href" =: "hic et nunc" )  (text "https://hicetnunc.xyz")
+
 
       el "div" $ do
       return ()

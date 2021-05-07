@@ -1,0 +1,12 @@
+diff --git a/obelisk-route.cabal b/obelisk-route.cabal
+index 465477bb..0ead67ee 100644
+--- a/obelisk-route.cabal
++++ b/obelisk-route.cabal
+@@ -35,6 +35,7 @@ library
+                  transformers,
+                  universe,
+                  universe-dependent-sum
++                 universe-some
+   exposed-modules: Obelisk.Route
+                    Obelisk.Route.TH
+                    Obelisk.Route.Frontend

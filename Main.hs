@@ -18,6 +18,7 @@ module Main where
 import qualified Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import Data.Text.Lazy (toStrict)
 import Reflex.Dom.Core (el, text, elAttr, (=:))
 import Data.Functor.Identity (Identity)
 
@@ -31,6 +32,7 @@ import qualified Obelisk.Run as O
 import qualified Obelisk.Route as O
 
 import Clay
+import qualified Clay.Font as Font
 
 data BackendRoute :: * -> * where
   BackendRoute_Missing :: BackendRoute ()
@@ -57,16 +59,15 @@ commonTitle = "hDAO - hic et nunc DAO"
 
 myStylesheet :: Css
 myStylesheet = body ? 
-                  do background  black
-                     color       green
-                     fontFamily  monospace
-                     border      dashed (px 2) yellow
+                  do background  white
+                     color       black
+                     fontFamily  ["Courier New", "Courier"] [monospace]
 
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
   { O._frontend_head = do
       el "title" $ text $ T.pack commonTitle
-      el "style" $ text $ render $ myStylesheet 
+      el "style" $ text $ toStrict $ render $ myStylesheet
   , O._frontend_body = do
       el "h1" $ text $ T.pack commonTitle
 

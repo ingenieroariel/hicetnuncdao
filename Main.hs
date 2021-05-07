@@ -74,12 +74,13 @@ frontend = O.Frontend
       el "h2" $ text $ "What is hDAO?"
       el "p" $ text "hDAO is the governance token for the decentralized digital assets marketplace hic et nunc"
       el "h2" $ text $ "Useful links"
-      
-      elAttr "a"
+     
+      el "ul" $ do
+        el "li" $  elAttr "a"
         ("href" =: "https://github.com/hicetnunc2000/hicetnunc/wiki/hDAO" )  (text "hDAO Wiki Page")
-      elAttr "a"
-        ("href" =: "hic et nunc" )  (text "https://hicetnunc.xyz")
-
+ 
+        el "li" $  elAttr "a"
+        ("href" =: "https://hicetnunc.xyz" )  (text "hic et nunc")
 
       el "div" $ do
       return ()

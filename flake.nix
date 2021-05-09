@@ -7,8 +7,9 @@
     packages.x86_64-linux.hicetnuncdao-docker =
        with import nixpkgs { system = "x86_64-linux"; };
 
-       pkgs.dockerTools.buildImage {
+       pkgs.dockerTools.buildLayeredImage {
          name = "hicetnuncdao";
+         maxLayers = 120;
          config = {
           Cmd = [ "${self.packages.x86_64-linux.hicetnuncdao}/bin/hicetnuncdao" ];
         };

@@ -15,3 +15,5 @@ docker load < ./result
 docker tag hicetnuncdao:hash piensa/hicetnuncdao:hash
 docker push piensa/hicetnuncdao:hash
 
+# credits
+This repo uses a non standard version of Obelisk ( https://github.com/obsidiansystems/obelisk ) a really awesome functional reactive framework for web and mobile applications, with batteries included.

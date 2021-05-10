@@ -28,7 +28,6 @@
               obelisk-tabulation = self.callPackage ./obelisk/obelisk-tabulation.nix {};
               obelisk-snap-extras = self.callPackage ./obelisk/obelisk-snap-extras.nix {};
               obelisk-backend = self.callPackage ./obelisk/obelisk-backend.nix {};
-              graphql-client = self.callPackage ./obelisk/graphql-client.nix { aeson-schemas = self.aeson-schemas;};
             };
           };
           haskellDeps = ps: with ps; [
@@ -58,7 +57,8 @@
             clay
             ghcide
             ghcid
-            #graphql-client
+            first-class-families
+            http-client-tls
           ];
           ghc = haskellPackages.ghcWithHoogle haskellDeps;
        in 

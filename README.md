@@ -4,7 +4,7 @@ Hic et Nunc DAO (hDAO) community site.
 
 # developing
 nix develop
-runhaskell Main.hs
+ghcid -r Main.hs
 
 # building (a frontend / backend combined binary)
 nix build

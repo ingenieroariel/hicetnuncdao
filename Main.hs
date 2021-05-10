@@ -13,6 +13,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE QuasiQuotes #-}
 module Main where
 
 import qualified Control.Monad
@@ -21,6 +22,15 @@ import qualified Data.Text.Encoding as T
 import Data.Text.Lazy (toStrict)
 import Reflex.Dom.Core (el, text, elAttr, (=:))
 import Data.Functor.Identity (Identity)
+import Control.Monad.IO.Class (MonadIO(..))
+import Data.GraphQL
+    ( MonadGraphQLQuery
+    , GraphQLSettings(..)
+    , defaultGraphQLSettings
+    , get
+    , runGraphQLQueryT
+    , runQuery
+    )
 
 import Obelisk.Route ( pattern (:/) )
 
@@ -31,8 +41,7 @@ import qualified Obelisk.Run as O
 
 import qualified Obelisk.Route as O
 
-import Clay
-import qualified Clay.Font as Font
+import Clay ( Css, render, html, color, fontFamily, monospace, fontSize, lineHeight, margin, px, (-:), (?))
 
 data BackendRoute :: * -> * where
   BackendRoute_Missing :: BackendRoute ()
@@ -81,6 +90,7 @@ myStylesheet = html ?
                      margin      (px 20) (px 40) (px 20) (px 20)
                      "text-rendering" -: "optimizeLegibility"
 
+
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
   { O._frontend_head = do
@@ -100,6 +110,7 @@ frontend = O.Frontend
         el "li" $ text $ "~15 million market cap"
         el "li" $ text $ "Largest holder < 3% of total supply"
         el "li" $ text $ "Not yet listed on any exchange, can only be bought if you hold Tezos outside an exchange."
+
 
       el "h2" $ text $ "Utility"
       el "ul" $ do

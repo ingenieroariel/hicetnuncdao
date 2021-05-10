@@ -28,6 +28,7 @@
               obelisk-tabulation = self.callPackage ./obelisk/obelisk-tabulation.nix {};
               obelisk-snap-extras = self.callPackage ./obelisk/obelisk-snap-extras.nix {};
               obelisk-backend = self.callPackage ./obelisk/obelisk-backend.nix {};
+              graphql-client = self.callPackage ./obelisk/graphql-client.nix { aeson-schemas = self.aeson-schemas;};
             };
           };
           haskellDeps = ps: with ps; [
@@ -57,12 +58,13 @@
             clay
             ghcide
             ghcid
+            #graphql-client
           ];
           ghc = haskellPackages.ghcWithHoogle haskellDeps;
        in 
        stdenv.mkDerivation {
           pname = "hicetnuncdao";
-          version = "0.2";
+          version = "0.3";
           buildInputs = [ ghc pkgs.ghcid ];
           src = self;
           buildPhase = "ghc -o $pname Main.hs";

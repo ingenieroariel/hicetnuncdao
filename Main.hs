@@ -29,16 +29,7 @@ import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as Text
 import Control.Concurrent.Async (withAsync)
-
 import System.Environment (getArgs)
-
-import Example.GraphQL.API (GetRecordingsQuery(..), GetRecordingsSchema)
-import Example.GraphQL.Enums.ReleaseStatus (ReleaseStatus(..))
-import Example.GraphQL.Scalars.Date (showDate)
-import Example.GraphQL.Scalars.Duration (showDuration)
-
-
-
 import qualified Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -46,7 +37,6 @@ import Data.Text.Lazy (toStrict)
 import Reflex.Dom.Core (el, text, elAttr, foldDyn, leftmost, display, button, dynText, constDyn, (=:))
 import Data.Functor.Identity (Identity)
 import Control.Monad.IO.Class (MonadIO(..))
-import qualified Data.Text as Text
 import Data.GraphQL
     ( MonadGraphQLQuery
     , GraphQLSettings(..)
@@ -55,24 +45,19 @@ import Data.GraphQL
     , runGraphQLQueryT
     , runQuery
     )
-
 import Obelisk.Route ( pattern (:/) )
-
-
---import Data.GraphQL
-import Data.GraphQL.Bootstrap
-
---import Example.GraphQL.Enums.ReleaseStatus
---import Example.GraphQL.Scalars
-
 import qualified Obelisk.Frontend as O
 import qualified Obelisk.Backend as O
 import qualified Obelisk.Route.TH as O
 import qualified Obelisk.Run as O
-
 import qualified Obelisk.Route as O
-
 import Clay ( Css, render, html, color, fontFamily, monospace, fontSize, lineHeight, margin, px, (-:), (?))
+
+import Example.GraphQL.API (GetRecordingsQuery(..), GetRecordingsSchema)
+import Example.GraphQL.Enums.ReleaseStatus (ReleaseStatus(..))
+import Example.GraphQL.Scalars.Date (showDate)
+import Example.GraphQL.Scalars.Duration (showDuration)
+
 
 data BackendRoute :: * -> * where
   BackendRoute_Missing :: BackendRoute ()
@@ -121,8 +106,8 @@ myStylesheet = html ?
                      margin      (px 20) (px 40) (px 20) (px 20)
                      "text-rendering" -: "optimizeLegibility"
 
-price :: String
-price = "3.4"
+songInfo :: String
+songInfo = "3.4"
 
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
@@ -176,7 +161,7 @@ frontend = O.Frontend
           evIncr <- button "Increment"
           evDecr <- button "Decrement"
           evReset <- button "Reset"
-      dynText $ (constDyn (Text.pack price))
+      dynText $ (constDyn (Text.pack songInfo))
       el "div" $ do
       return ()
   }

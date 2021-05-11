@@ -18,15 +18,19 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeInType #-}
+{-# LANGUAGE RecursiveDo #-}
 module Main where
 
 
 import Control.Monad.IO.Class (MonadIO)
 import Data.Bool (bool)
-import Data.GraphQL
-import Data.Maybe (fromMaybe)
+import Data.GraphQL (GraphQLQueryT, mkGetter)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Text as Text
+import Control.Concurrent.Async (withAsync)
+
+import System.Environment (getArgs)
 
 import Example.GraphQL.API (GetRecordingsQuery(..), GetRecordingsSchema)
 import Example.GraphQL.Enums.ReleaseStatus (ReleaseStatus(..))
@@ -39,7 +43,7 @@ import qualified Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Text.Lazy (toStrict)
-import Reflex.Dom.Core (el, text, elAttr, (=:))
+import Reflex.Dom.Core (el, text, elAttr, foldDyn, leftmost, display, button, dynText, constDyn, (=:))
 import Data.Functor.Identity (Identity)
 import Control.Monad.IO.Class (MonadIO(..))
 import qualified Data.Text as Text
@@ -55,7 +59,7 @@ import Data.GraphQL
 import Obelisk.Route ( pattern (:/) )
 
 
-import Data.GraphQL
+--import Data.GraphQL
 import Data.GraphQL.Bootstrap
 
 --import Example.GraphQL.Enums.ReleaseStatus
@@ -117,6 +121,8 @@ myStylesheet = html ?
                      margin      (px 20) (px 40) (px 20) (px 20)
                      "text-rendering" -: "optimizeLegibility"
 
+price :: String
+price = "3.4"
 
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
@@ -163,6 +169,14 @@ frontend = O.Frontend
 
       el "h2" $ text $ "Technical Info"
       el "p" $ text $ "hDAO contract address KT1AFA2mwNUMNd4SsujE1YYp29vd8BZejyKW token id 0"
+
+      el "h2" $ text "Using foldDyn with function application"
+      rec dynNum <- foldDyn ($) (0 :: Int) $ leftmost [(+ 1) <$ evIncr, (+ (-1)) <$ evDecr, const 0 <$ evReset]  
+          el "div" $ display dynNum
+          evIncr <- button "Increment"
+          evDecr <- button "Decrement"
+          evReset <- button "Reset"
+      dynText $ (constDyn (Text.pack price))
       el "div" $ do
       return ()
   }
@@ -177,12 +191,12 @@ backend = O.Backend
 newtype App a = App { unApp :: GraphQLQueryT IO a }
   deriving (Functor,Applicative,Monad,MonadIO,MonadGraphQLQuery)
 
-runApp :: App a -> IO a
 runApp = runGraphQLQueryT graphQLSettings . unApp
   where
     graphQLSettings = defaultGraphQLSettings
       { url = "https://graphbrainz.herokuapp.com/"
       }
+
 
 mkGetter "Song" "getSongs" ''GetRecordingsSchema ".search!.recordings!.nodes![]!"
 
@@ -221,5 +235,11 @@ showRecording song = Text.unpack $ Text.unlines $ map Text.unwords
     showT :: Show a => a -> Text.Text
     showT = Text.pack . show
 
+setSong = putStrLn
 
-main = O.run 8001 (O.runServeAsset "static")  backend frontend
+main = withAsync (do
+  song <- fromMaybe "Smells Like Teen Spirit" . listToMaybe <$> getArgs
+  results <- runApp (searchForSong song)
+  mapM_ (setSong . showRecording) results)
+  $ \_ -> 
+  ( O.run 8001 (O.runServeAsset "static")  backend frontend) 

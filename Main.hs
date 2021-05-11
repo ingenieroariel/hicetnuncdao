@@ -109,12 +109,64 @@ myStylesheet = html ?
 songInfo :: String
 songInfo = "3.4"
 
+mkGetter "Song" "getSongs" ''GetRecordingsSchema ".search!.recordings!.nodes![]!"
+
+searchForSong :: (MonadIO m, MonadGraphQLQuery m) => String -> m [Song]
+searchForSong song = getSongs <$> runQuery GetRecordingsQuery
+  { _query = Text.pack song
+  , _first = Just 5
+  }
+
+newtype App a = App { unApp :: GraphQLQueryT IO a }
+  deriving (Functor,Applicative,Monad,MonadIO,MonadGraphQLQuery)
+
+runApp = runGraphQLQueryT graphQLSettings . unApp
+  where
+    graphQLSettings = defaultGraphQLSettings
+      { url = "https://graphbrainz.herokuapp.com/"
+      }
+
+
+
+
+showRecording :: Song -> String
+showRecording song = Text.unpack $ Text.unlines $ map Text.unwords
+  [ ["=====", title, parens $ Text.intercalate ", " artists, "====="]
+  , ["Has video recording?", yesno $ Just True == [get| song.video |]]
+  , ["Length of song:", maybe "--" (Text.pack . showDuration) [get| song.length |]]
+  , ["Rating:", maybe "--" fromRating mRating]
+  , ["Releases:"]
+  ] ++ map (("* " <>) . showRelease) [get| song.releases!.nodes![]! |]
+  where
+    title = [get| song.title! |]
+    artists = [get| song.artists!.nodes![]!.name! |]
+    (voteCount, mRating) = [get| song.rating!.(voteCount, value) |]
+    fromRating rating = Text.unwords
+      [ showT rating
+      , parens $ Text.unwords ["out of", showT voteCount]
+      ]
+    showRelease release =
+      if [get| release.status |] == Just OFFICIAL
+        then Text.unwords
+          [ [get| release.title! |]
+          , maybe "--" (parens . Text.pack . showDate) [get| release.date |]
+          ]
+        else "[UNOFFICIAL]"
+
+    parens s = "(" <> s <> ")"
+    yesno = bool "No" "Yes"
+    showT :: Show a => a -> Text.Text
+    showT = Text.pack . show
+
+
 frontend :: O.Frontend (O.R FrontendRoute)
 frontend = O.Frontend
   { O._frontend_head = do
       el "title" $ text $ T.pack commonTitle
       el "style" $ text $ toStrict $ render $ myStylesheet
   , O._frontend_body = do
+
+
       el "h1" $ text $ T.pack commonTitle
 
       el "h2" $ text $ "What is hDAO?"
@@ -161,7 +213,10 @@ frontend = O.Frontend
           evIncr <- button "Increment"
           evDecr <- button "Decrement"
           evReset <- button "Reset"
-      dynText $ (constDyn (Text.pack songInfo))
+
+      rec dynText <- (constDyn (Text.pack (showRecording results)))
+          song <- fromMaybe "Smells Like Teen Spirit" . listToMaybe <$> getArgs
+          results <- runApp (searchForSong song)
       el "div" $ do
       return ()
   }
@@ -172,53 +227,6 @@ backend = O.Backend
   , O._backend_routeEncoder = fullRouteEncoder
   }
 
-
-newtype App a = App { unApp :: GraphQLQueryT IO a }
-  deriving (Functor,Applicative,Monad,MonadIO,MonadGraphQLQuery)
-
-runApp = runGraphQLQueryT graphQLSettings . unApp
-  where
-    graphQLSettings = defaultGraphQLSettings
-      { url = "https://graphbrainz.herokuapp.com/"
-      }
-
-
-mkGetter "Song" "getSongs" ''GetRecordingsSchema ".search!.recordings!.nodes![]!"
-
-searchForSong :: (MonadIO m, MonadGraphQLQuery m) => String -> m [Song]
-searchForSong song = getSongs <$> runQuery GetRecordingsQuery
-  { _query = Text.pack song
-  , _first = Just 5
-  }
-
-showRecording :: Song -> String
-showRecording song = Text.unpack $ Text.unlines $ map Text.unwords
-  [ ["=====", title, parens $ Text.intercalate ", " artists, "====="]
-  , ["Has video recording?", yesno $ Just True == [get| song.video |]]
-  , ["Length of song:", maybe "--" (Text.pack . showDuration) [get| song.length |]]
-  , ["Rating:", maybe "--" fromRating mRating]
-  , ["Releases:"]
-  ] ++ map (("* " <>) . showRelease) [get| song.releases!.nodes![]! |]
-  where
-    title = [get| song.title! |]
-    artists = [get| song.artists!.nodes![]!.name! |]
-    (voteCount, mRating) = [get| song.rating!.(voteCount, value) |]
-    fromRating rating = Text.unwords
-      [ showT rating
-      , parens $ Text.unwords ["out of", showT voteCount]
-      ]
-    showRelease release =
-      if [get| release.status |] == Just OFFICIAL
-        then Text.unwords
-          [ [get| release.title! |]
-          , maybe "--" (parens . Text.pack . showDate) [get| release.date |]
-          ]
-        else "[UNOFFICIAL]"
-
-    parens s = "(" <> s <> ")"
-    yesno = bool "No" "Yes"
-    showT :: Show a => a -> Text.Text
-    showT = Text.pack . show
 
 setSong = putStrLn
 

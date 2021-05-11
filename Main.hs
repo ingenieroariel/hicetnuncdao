@@ -214,12 +214,16 @@ frontend = O.Frontend
           evDecr <- button "Decrement"
           evReset <- button "Reset"
 
-      rec dynText <- (constDyn (Text.pack (showRecording results)))
+      el "div" $ do 
           song <- fromMaybe "Smells Like Teen Spirit" . listToMaybe <$> getArgs
           results <- runApp (searchForSong song)
+          el "div" $ display  Text.pack( showRecording results )
+
       el "div" $ do
+
       return ()
   }
+
 
 backend :: O.Backend BackendRoute FrontendRoute
 backend = O.Backend
